@@ -58,6 +58,6 @@ if __name__ == "__main__":
     k_ij = pseudocodeStep6(seed_gen, n, m)
 
     # Print end results
-    print(f"S_i: {S_i}")
-    print(f"D_j: {D_j}")
-    print(f"k_ij: {k_ij}")
+    # print(f"S_i: {S_i}")
+    # print(f"D_j: {D_j}")
+    # print(f"k_ij: {k_ij}")
