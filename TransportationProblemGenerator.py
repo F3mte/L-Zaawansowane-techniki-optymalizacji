@@ -9,7 +9,7 @@ def pseudocodeStep3(K, seed):
     for i in range(K):
         S_i.append(seed.nextInt(1, 20))
         D_j = S_i.copy()
-    return S_i, D_j
+    return S_i, D_j  # type: ignore
 
 
 def pseudocodeStep4and5(seed, n, m, S_i, D_j):
