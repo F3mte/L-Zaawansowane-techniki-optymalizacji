@@ -1,34 +1,79 @@
 from docplex.mp.model import Model
+import time
 
-n = 10
-B = 30
+list_of_data = [
+    [
+        10,
+        30,
+        [1, 9, 8, 1, 5, 10, 8, 4, 7, 9],
+        [10, 10, 2, 8, 6, 1, 1, 9, 10, 3],
+        [4, 3, 2, 8, 9, 2, 3, 10, 4, 6]
+    ],
+    [
+        42,
+        91,
+        [1, 3, 10, 3, 10, 3, 2, 9, 6, 5, 3, 10, 6, 4, 4, 1, 5, 1, 1, 8, 10, 4, 2, 1, 7, 6, 10, 3, 5, 5, 8, 6, 4, 5, 1, 1, 5, 5, 3, 10, 9, 5],
+        [6, 4, 6, 2, 5, 2, 9, 8, 2, 5, 1, 10, 8, 4, 7, 6, 4, 10, 10, 2, 2, 5, 9, 1, 4, 6, 4, 7, 5, 10, 9, 9, 4, 6, 5, 8, 10, 3, 4, 1, 6, 2],
+        [8, 2, 6, 9, 3, 4, 6, 1, 9, 5, 1, 8, 7, 3, 4, 2, 2, 6, 5, 6, 7, 8, 9, 2, 3, 2, 8, 10, 10, 4, 8, 6, 4, 7, 5, 4, 2, 5, 8, 5, 2, 9]
+    ],
+    [
+        100,
+        367,
+        [1, 8, 5, 1, 10, 9, 6, 7, 4, 7, 4, 5, 10, 10, 7, 2, 2, 4, 8, 10, 2, 6, 10, 3, 4, 10, 9, 8, 1, 8, 10, 4, 4, 5, 7, 2, 1, 5, 8, 4, 8, 5, 2, 6, 6, 7, 7, 7, 5, 10, 10, 10, 9, 1, 7, 1, 5, 6, 2, 1, 5, 10, 4, 9, 1, 9, 2, 1, 6, 5, 4, 9, 1, 6, 9, 7, 10, 8, 6, 4, 5, 2, 10, 5, 3, 6, 2, 9, 10, 5, 6, 1, 4, 5, 8, 6, 1, 8, 1, 1],
+        [10, 10, 4, 6, 1, 2, 1, 7, 9, 5, 9, 1, 7, 5, 7, 10, 1, 2, 10, 3, 2, 6, 8, 1, 5, 3, 2, 5, 9, 10, 2, 8, 3, 2, 4, 1, 10, 7, 3, 5, 3, 9, 2, 7, 5, 10, 4, 7, 3, 6, 9, 6, 6, 5, 1, 8, 4, 8, 10, 5, 6, 6, 3, 2, 6, 6, 8, 7, 7, 2, 3, 1, 2, 6, 10, 1, 5, 4, 7, 5, 2, 10, 7, 1, 9, 5, 1, 9, 9, 5, 5, 8, 6, 9, 5, 1, 4, 7, 1, 9],
+        [7, 6, 4, 6, 7, 3, 6, 10, 8, 1, 9, 9, 8, 5, 6, 6, 10, 3, 6, 9, 5, 9, 5, 6, 9, 6, 9, 7, 1, 7, 6, 4, 1, 1, 7, 10, 7, 8, 8, 10, 1, 3, 5, 6, 6, 5, 8, 5, 3, 7, 8, 9, 7, 3, 9, 3, 10, 9, 6, 7, 3, 5, 6, 2, 7, 10, 7, 7, 2, 5, 3, 5, 3, 8, 5, 5, 10, 2, 5, 5, 1, 4, 10, 1, 6, 5, 3, 5, 5, 7, 7, 6, 7, 4, 4, 10, 9, 8, 6, 9]
+    ]
+]
+
+number_of_n = []
+solving_time = []
 m = Model(name='descreteKnapsackProblem')
 
-x = []
-y = []
-for i in range(0, n):
-    x.append(m.binary_var(name='x{0}'.format(i)))
-    y.append(m.binary_var(name='y{0}'.format(i)))
+for data in list_of_data:
+    n = data[0]
+    B = data[1]
+    values = data[2]
+    weights1 = data[3]
+    weights2 = data[4]
 
-values = [1, 9, 8, 1, 5, 10, 8, 4, 7, 9]
-weights1 = [10, 10, 2, 8, 6, 1, 1, 9, 10, 3]
-weights2 = [4, 3, 2, 8, 9, 2, 3, 10, 4, 6]
+    x = []
+    y = []
+    for i in range(0, n):
+        x.append(m.binary_var(name='x{0}'.format(i)))
+        y.append(m.binary_var(name='y{0}'.format(i)))
 
-val_of_knapsack_1 = m.sum(x[i]*values[i] for i in range(0, n))
-val_of_knapsack_2 = m.sum(y[i]*values[i] for i in range(0, n))
+    # values = [1, 9, 8, 1, 5, 10, 8, 4, 7, 9]
+    # weights1 = [10, 10, 2, 8, 6, 1, 1, 9, 10, 3]
+    # weights2 = [4, 3, 2, 8, 9, 2, 3, 10, 4, 6]
 
-m.maximize(m.add(val_of_knapsack_1, val_of_knapsack_2))
+    values = [1, 8, 5, 1, 10, 9, 6, 7, 4, 7, 4, 5, 10, 10, 7, 2, 2, 4, 8, 10, 2, 6, 10, 3, 4, 10, 9, 8, 1, 8, 10, 4, 4, 5, 7, 2, 1, 5, 8, 4, 8, 5, 2, 6, 6, 7, 7, 7, 5, 10, 10, 10, 9, 1, 7, 1, 5, 6, 2, 1, 5, 10, 4, 9, 1, 9, 2, 1, 6, 5, 4, 9, 1, 6, 9, 7, 10, 8, 6, 4, 5, 2, 10, 5, 3, 6, 2, 9, 10, 5, 6, 1, 4, 5, 8, 6, 1, 8, 1, 1]
+    weights1 = [10, 10, 4, 6, 1, 2, 1, 7, 9, 5, 9, 1, 7, 5, 7, 10, 1, 2, 10, 3, 2, 6, 8, 1, 5, 3, 2, 5, 9, 10, 2, 8, 3, 2, 4, 1, 10, 7, 3, 5, 3, 9, 2, 7, 5, 10, 4, 7, 3, 6, 9, 6, 6, 5, 1, 8, 4, 8, 10, 5, 6, 6, 3, 2, 6, 6, 8, 7, 7, 2, 3, 1, 2, 6, 10, 1, 5, 4, 7, 5, 2, 10, 7, 1, 9, 5, 1, 9, 9, 5, 5, 8, 6, 9, 5, 1, 4, 7, 1, 9]
+    weights2 = [7, 6, 4, 6, 7, 3, 6, 10, 8, 1, 9, 9, 8, 5, 6, 6, 10, 3, 6, 9, 5, 9, 5, 6, 9, 6, 9, 7, 1, 7, 6, 4, 1, 1, 7, 10, 7, 8, 8, 10, 1, 3, 5, 6, 6, 5, 8, 5, 3, 7, 8, 9, 7, 3, 9, 3, 10, 9, 6, 7, 3, 5, 6, 2, 7, 10, 7, 7, 2, 5, 3, 5, 3, 8, 5, 5, 10, 2, 5, 5, 1, 4, 10, 1, 6, 5, 3, 5, 5, 7, 7, 6, 7, 4, 4, 10, 9, 8, 6, 9]
 
-weight_of_knapsack1 = m.sum(x[i] for i in range(0, n))
-weight_of_knapsack2 = m.sum(y[i] for i in range(0, n))
-constraint1 = m.add(weight_of_knapsack1, weight_of_knapsack2)
-constraint2 = m.sum(x[i]*weights1[i] for i in range(0, n))
-constraint3 = m.sum(y[i]*weights2[i] for i in range(0, n))
+    val_of_knapsack_1 = m.sum(x[i]*values[i] for i in range(0, n))
+    val_of_knapsack_2 = m.sum(y[i]*values[i] for i in range(0, n))
 
-m.add_constraint(constraint1 <= n)  # type: ignore
-m.add_constraint(constraint2 <= B)  # type: ignore
-m.add_constraint(constraint3 <= B)  # type: ignore
+    weight_of_knapsack1 = m.sum(x[i] for i in range(0, n))
+    weight_of_knapsack2 = m.sum(y[i] for i in range(0, n))
+    const1 = weight_of_knapsack1 + weight_of_knapsack2  # type: ignore
+    const2 = m.sum(x[i]*weights1[i] for i in range(0, n))
+    const3 = m.sum(y[i]*weights2[i] for i in range(0, n))
 
-m.solve(log_output=True)
-m.print_information()
-m.print_solution()
+    m.maximize(val_of_knapsack_1 + val_of_knapsack_2)  # type: ignore
+
+    m.add_constraint(const1 <= n)  # type: ignore
+    m.add_constraint(const2 <= B)  # type: ignore
+    m.add_constraint(const3 <= B)  # type: ignore
+
+    start = time.time()
+    m.solve(log_output=True)
+    end = time.time()
+
+    m.print_information()
+    m.print_solution()
+
+    number_of_n.append(data[0])
+    solving_time.append(end - start)
+
+for index, n in enumerate(number_of_n):
+    print(f"Czas rozwiązywania dla n={n}: {solving_time[index]:.3f}")
