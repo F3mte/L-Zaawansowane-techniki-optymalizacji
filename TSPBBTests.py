@@ -1,43 +1,50 @@
-import numpy as np
 import time
 import matplotlib.pyplot as plt
+from TravellingSalesmanProblemGenerator import cities_gen
 from TSPBB import tsp_bnb
+from TSPBS import tsp_bs
 
-# Define the city arrays for each test
-cities1 = np.array([[0, 10, 15, 20, 25], 
-                    [10, 0, 32, 25, 20], 
-                    [15, 32, 0, 30, 10], 
-                    [20, 25, 30, 0, 32], 
-                    [25, 20, 10, 32, 0]])
+cities1 = cities_gen(4, 30)
 
-cities2 = np.array([[0, 20, 22, 28], 
-                    [20, 0, 30, 34], 
-                    [22, 30, 0, 12], 
-                    [28, 34, 12, 0]])
+cities2 = cities_gen(5, 30)
 
-cities3 = np.array([[0, 1, 2], 
-                    [1, 0, 3], 
-                    [2, 3, 0]])
+cities3 = cities_gen(6, 30)
 
-cities4 = np.array([[0, 5, 2, 4], 
-                    [5, 0, 3, 7], 
-                    [2, 3, 0, 1], 
-                    [4, 7, 1, 0]])
+cities4 = cities_gen(7, 30)
 
 cities_list = [cities1, cities2, cities3, cities4]
 
-execution_times = []
+execution_times_bnb = []
 
 for cities in cities_list:
     start_time = time.time()
-    tsp_bnb(cities)
+    best_tour = tsp_bnb(cities)
+    print(best_tour)
     end_time = time.time()
     execution_time = end_time - start_time
-    execution_times.append(execution_time)
+    execution_times_bnb.append(execution_time)
 
-plt.plot(execution_times, 'o-')
+# plt.plot(execution_times_bnb, 'o-')
+# plt.xlabel('Test Number')
+# plt.ylabel('Execution Time (s)')
+# plt.title('Execution Time for TSPBB')
+# plt.xticks(range(len(cities_list)), ['1', '2', '3', '4'])
+# plt.show()
+
+execution_times_bs = []
+
+for cities in cities_list:
+    start_time = time.time()
+    best_tour = tsp_bs(cities)
+    print(best_tour, 5)
+    end_time = time.time()
+    execution_time = end_time - start_time
+    execution_times_bs.append(execution_time)
+
+plt.plot(execution_times_bs, 'o-')
+plt.plot(execution_times_bnb, '--')
 plt.xlabel('Test Number')
 plt.ylabel('Execution Time (s)')
-plt.title('Execution Time for TSPBB')
+plt.title('Execution Time')
 plt.xticks(range(len(cities_list)), ['1', '2', '3', '4'])
 plt.show()

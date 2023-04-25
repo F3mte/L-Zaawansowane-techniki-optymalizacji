@@ -5,9 +5,6 @@
 from RandomNumberGenerator import RandomNumberGenerator
 import numpy as np
 
-def main(n, Z):
-    return cities_gen(n, Z)
-
 def cities_gen(n, Z):
 
     seed_gen = RandomNumberGenerator(Z)
@@ -19,5 +16,3 @@ def cities_gen(n, Z):
                 cities[j, i] = cities[i, j]
     return cities
 
-if __name__ == "__main__":
-    main()
