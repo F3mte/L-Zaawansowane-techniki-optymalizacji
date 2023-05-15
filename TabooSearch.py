@@ -2,25 +2,6 @@ import math
 import time
 
 
-def calculate(permutation, table):
-    """
-# permutation - konkretna kolejnosc zadan do realizacji,
-# table - oryginalna tablica, nie uporzadkowana, jest to wazne, bo w kilku miejscach poslugujemy sie uporzadkowanna
-# table[][]
-# example index
-# table[current_number_of_machine][current_number_of_task]
-"""
-    m = [0] * len(table[0])  # robienie miejsca listę
-    for i in permutation:
-        for j in range(0, len(table[0])):  # inaczej ilosc maszyn
-            if j == 0:
-                # i-1 bo w wektorze permutacji mamy liczby od 1 i bysmy wyleciali poza tablice
-                m[j] += table[i-1][j]
-            else:
-                m[j] = max(m[j], m[j-1]) + table[i-1][j]
-    return max(m)
-
-
 def read_from_file(file_name):
     """Odczytaj liczbę zadań, maszyn i czasy z pliku"""
     f = open(file_name, "r")
@@ -62,7 +43,7 @@ class tabu_search:
     def execute(self, stop="iterate", stop_value=10, tabu_length=10):
         self.best_perm = self.starting_perm()
         self.neighbourhood_best_perm = self.best_perm
-        self.best_cmax = calculate(
+        self.best_cmax = self.calculate(
             self.neighbourhood_best_perm, self.matrix)
         neighbourhood_cmax = self.best_cmax
 
@@ -76,44 +57,58 @@ class tabu_search:
             print("ERROR: execute option not known")
         while do_loop:
             neighbourhood_cmax = math.inf
-            self.find_neigh_swap()
-            for neigh_num in range(len(self.neighbourhood_list)):
-                curr_cmax = calculate(
-                    self.neighbourhood_list[neigh_num], self.matrix)
-                if curr_cmax < neighbourhood_cmax:
+            self.find_neigh_swap() # Wygenruj sąsiedztwo
+            for neigh_num in range(len(self.neighbourhood_list)): # Znajdź sąsiedztwo z najlepszym czasem
+                curr_cmax = self.calculate(
+                    self.neighbourhood_list[neigh_num], self.matrix) # Oblicz czas dla obecnej permutacji
+                if curr_cmax < neighbourhood_cmax: # Jeśli czas jest lepszy, to zapamiętaj go razem z permutacją
                     neighbourhood_cmax = curr_cmax
                     self.neighbourhood_best_perm = self.neighbourhood_list[neigh_num].copy(
                     )
-            if len(self.tabu_list) >= tabu_length:
+            if len(self.tabu_list) >= tabu_length: # Wyrzuć najstarszy element z listy tabu, jeśli lista jest już pełna
                 self.tabu_list.pop(0)
-            self.tabu_list.append(self.neighbourhood_best_perm)
-            if neighbourhood_cmax < self.best_cmax:
+            self.tabu_list.append(self.neighbourhood_best_perm) # Dodaj najlepszą obecną permutację do listy tabu
+            if neighbourhood_cmax < self.best_cmax: # Zapisz najlepszą znaną permutację i czas
                 self.best_cmax = neighbourhood_cmax
                 self.best_perm = self.neighbourhood_best_perm.copy()
-            if stop == "time":
+            if stop == "time": # Warunek stopu: ilość czasu
                 if time.process_time() - stop_param > stop_value:
                     do_loop = False
-            if stop == "iterate":
+            if stop == "iterate": # Warunek stopu: ilość iteracji
                 stop_param += 1
                 if stop_param > stop_value:
                     do_loop = False
 
+    def calculate(self, permutation, table):
+        """
+    permutation - konkretna kolejnosc zadan do realizacji,
+    table - oryginalna tablica, nie uporzadkowana, jest to wazne, bo w kilku miejscach poslugujemy sie uporzadkowanna
+    """
+        m = [0] * len(table[0])
+        for i in permutation: # Dla każdego zadania z danej permutacji
+            for j in range(0, len(table[0])):  # Dla każdej maszyny
+                if j == 0:
+                    m[j] += table[i-1][j] # Dla pierwszej maszyny dodaj czas przygotowania
+                else:
+                    m[j] = max(m[j], m[j-1]) + table[i-1][j] # Dla kolejnych znajdź wg. wzoru 2.8 http://radoslaw.idzikowski.staff.iiar.pwr.wroc.pl/instruction/zto/problemy.pdf
+        return max(m)
+
     def find_neigh_swap(self):
-        """funkcja szukajaca sasiedzctwa poprzez swap, zamienia dwa sasiednie elementy"""
+        """Funkcja szukajaca sasiedzctwa poprzez swap, zamienia dwa sasiednie elementy"""
         self.neighbourhood_list.clear()
-        for i in range(len(self.neighbourhood_best_perm)-1):
+        for i in range(len(self.neighbourhood_best_perm)-1): # Zamień dwa sąsiadujące ze sobą zadania
             current_perm = self.neighbourhood_best_perm.copy()
             current_perm[i] = self.neighbourhood_best_perm[i+1]
             current_perm[i+1] = self.neighbourhood_best_perm[i]
             on_tabu_list = False
-            for i in self.tabu_list:  # zabezpieczenie przed wpisywaniem czegos do tabu list, jesli bylo juz przedtem
+            for i in self.tabu_list:  # Sprawdź czy dana permutacja jest już na liście tabu
                 if i == current_perm:
                     on_tabu_list = True
-            if on_tabu_list == False:
+            if on_tabu_list == False: # Jeśli permutacji nie ma na liście tabu, dodaj ją do listy sąsiedztw
                 self.neighbourhood_list.append(current_perm)
 
     def starting_perm(self):
-        """funkcja która zwraca permutacje w kolejności rosnącej"""
+        """Funkcja która zwraca permutacje w kolejności rosnącej"""
         perm = []
         for i in range(len(self.matrix)):
             perm.append(i+1)
