@@ -1,6 +1,7 @@
 import math
 import time
 from PermutationFlowShopProblemGenerator import generateFlowShopProblem
+import matplotlib.pyplot as plt
 
 
 def read_from_file(file_name):
@@ -42,6 +43,7 @@ class tabu_search:
         self.best_cmax_list = [0]  # Lista do stworzenia wykresu
         self.elapsed_time_list = [0.0]  # Lista do stworzenia wykresu
         self.start_time = time.process_time()
+        self.iteration_list = [0]
 
     def execute(self, stop="iterate", stop_value=10, tabu_length=10):
         self.best_perm = self.starting_perm()
@@ -87,6 +89,7 @@ class tabu_search:
                 self.best_cmax_list.append(self.best_cmax)
                 # Dodaj do listy czasu po każdej iteracji
                 self.elapsed_time_list.append(elapsed_time)
+                self.iteration_list.append(stop_param)
                 if stop_param > stop_value:
                     do_loop = False
 
@@ -137,14 +140,47 @@ if __name__ == "__main__":
     generateFlowShopProblem(numberOfTasks, listOfSeeds,
                             listOfData)
     # Wykonaj tabu search dla każdej instancji
+    best_cmax_values = []
+    elapsed_time_values = []
+    all_cmax_values = []
+    iteration_list = []
     for data in listOfData:
         matrix = read_from_file(data)
         # Stwórz klasę
         tabu = tabu_search(matrix)
-        # Policz czas wykonywania
+        # Wykonaj tabu search
         tabu.execute()
-        # Wypisz wyniki
-        print(tabu.best_cmax)
-        print(tabu.best_perm)
-        print(tabu.best_cmax_list)
-        print(tabu.elapsed_time_list)
+        # Zapisz wyniki
+        best_cmax_values.append(tabu.best_cmax)
+        elapsed_time_values.append(tabu.elapsed_time_list[-1])
+        all_cmax_values.append(tabu.best_cmax_list)
+        iteration_list.append(tabu.iteration_list)
+        # print(tabu.best_cmax)
+        # print(tabu.best_perm)
+        # print(tabu.best_cmax_list)
+        # print(tabu.elapsed_time_list)
+    # Pokaż wyniki na wykresach
+    plt.figure(figsize=(10, 6))
+    plt.subplot(2, 1, 1)
+    print(all_cmax_values)
+    print(iteration_list)
+    print(numberOfTasks[0])
+    plt.plot(iteration_list[0], all_cmax_values[0],
+             marker='o', linestyle='-', color='b')
+    plt.plot(iteration_list[1], all_cmax_values[1],
+             marker='o', linestyle='-', color='b')
+    plt.plot(iteration_list[2], all_cmax_values[2],
+             marker='o', linestyle='-', color='b')
+    plt.xlabel('Number of iteration')
+    plt.ylabel('Best Cmax')
+    plt.title('Best Cmax vs Number of instances')
+
+    plt.subplot(2, 1, 2)
+    plt.plot(numberOfTasks, elapsed_time_values,
+             marker='o', linestyle='-', color='r')
+    plt.xlabel('Run')
+    plt.ylabel('Elapsed Time (s)')
+    plt.title('Elapsed Time vs Run')
+
+    plt.tight_layout()
+    plt.show()
