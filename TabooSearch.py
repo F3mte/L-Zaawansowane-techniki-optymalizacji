@@ -39,6 +39,9 @@ class tabu_search:
         self.neighbourhood_list = []
         self.best_cmax = math.inf
         self.neighbourhood_best_perm = []
+        self.best_cmax_list = [0]  # Lista do stworzenia wykresu
+        self.elapsed_time_list = [0.0]  # Lista do stworzenia wykresu
+        self.start_time = time.process_time()
 
     def execute(self, stop="iterate", stop_value=10, tabu_length=10):
         self.best_perm = self.starting_perm()
@@ -79,6 +82,11 @@ class tabu_search:
                     do_loop = False
             if stop == "iterate":  # Warunek stopu: ilość iteracji
                 stop_param += 1
+                elapsed_time = time.process_time() - self.start_time
+                # Dodaj do listy najlepszych wyników po każdej iteracji
+                self.best_cmax_list.append(self.best_cmax)
+                # Dodaj do listy czasu po każdej iteracji
+                self.elapsed_time_list.append(elapsed_time)
                 if stop_param > stop_value:
                     do_loop = False
 
@@ -138,3 +146,5 @@ if __name__ == "__main__":
         # Wypisz wyniki
         print(tabu.best_cmax)
         print(tabu.best_perm)
+        print(tabu.best_cmax_list)
+        print(tabu.elapsed_time_list)
